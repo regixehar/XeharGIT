@@ -118,11 +118,8 @@
     <Content Include="Quicky.Master" />
     <Content Include="sales.aspx" />
     <Content Include="SignUp.aspx" />
-
     <Content Include="vendors.aspx" />
-
     <Content Include="WebForm2.aspx" />
-
     <Content Include="welcome.aspx" />
     <Content Include="WebF.aspx" />
     <None Include="Web.Debug.config">
@@ -215,21 +212,18 @@
     <Compile Include="SignUp.aspx.designer.cs">
       <DependentUpon>SignUp.aspx</DependentUpon>
     </Compile>
-
     <Compile Include="vendors.aspx.cs">
       <DependentUpon>vendors.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="vendors.aspx.designer.cs">
       <DependentUpon>vendors.aspx</DependentUpon>
-
+    </Compile>
     <Compile Include="WebForm2.aspx.cs">
       <DependentUpon>WebForm2.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="WebForm2.aspx.designer.cs">
       <DependentUpon>WebForm2.aspx</DependentUpon>
-
     </Compile>
     <Compile Include="welcome.aspx.cs">
       <DependentUpon>welcome.aspx</DependentUpon>
