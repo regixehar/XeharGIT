@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS `xehardb`.`customers` (
   `Country` VARCHAR(60) CHARACTER SET 'big5' COLLATE 'big5_bin' NULL DEFAULT NULL,
   `Company` VARCHAR(60) CHARACTER SET 'big5' COLLATE 'big5_bin' NULL DEFAULT NULL,
   `Phone` VARCHAR(10) CHARACTER SET 'big5' COLLATE 'big5_bin' NULL DEFAULT NULL,
-  `Purchasing Site` VARCHAR(45) NULL,
+  `Purchasing Site` VARCHAR(45) CHARACTER SET 'big5' COLLATE 'big5_bin' NULL DEFAULT NULL,
   PRIMARY KEY (`CID`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = big5
@@ -90,41 +90,44 @@ COMMENT = ' ';
 CREATE TABLE IF NOT EXISTS `xehardb`.`products` (
   `PID` INT(11) NOT NULL AUTO_INCREMENT,
   `SKU` VARCHAR(60) NULL DEFAULT NULL,
-  `Product Name` VARCHAR(100) NOT NULL,
-  `Description` VARCHAR(500) NOT NULL,
-  `Model Number` VARCHAR(60) NOT NULL,
-  `Department` VARCHAR(60) NULL,
-  `Tax Code` VARCHAR(45) NOT NULL,
+  `ProductName` VARCHAR(100) NULL DEFAULT NULL,
+  `Description` VARCHAR(500) NULL DEFAULT NULL,
+  `ModelNumber` VARCHAR(60) NULL DEFAULT NULL,
+  `Department` VARCHAR(60) NULL DEFAULT NULL,
+  `TaxCode` VARCHAR(45) NULL DEFAULT NULL,
   `Brand` VARCHAR(45) NULL DEFAULT NULL,
   `Manufactuer` VARCHAR(45) NULL DEFAULT NULL,
-  `Vendor Cost` DECIMAL(5,2) NOT NULL COMMENT 'How much we buy it for from vendor',
+  `VendorCost` DECIMAL(5,2) NULL DEFAULT NULL COMMENT 'How much we buy it for from vendor',
+  `VendorSku` VARCHAR(45) NULL DEFAULT NULL,
   `Gender` VARCHAR(10) NULL DEFAULT NULL,
-  `Warranty` TINYINT(4) NOT NULL,
+  `Warranty` TINYINT(4) NULL DEFAULT NULL,
   `Weight` DECIMAL(4,3) NULL DEFAULT NULL,
-  `StartDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `StartDate` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
   `EndDate` DATETIME NULL DEFAULT NULL,
-  `Qaulity` VARCHAR(30) NULL DEFAULT NULL,
+  `Quantity` VARCHAR(30) NULL DEFAULT NULL,
   `SupplierCost` DECIMAL(5,2) NULL DEFAULT NULL COMMENT 'How much we sell product to customer',
   `CountryOrigin` VARCHAR(45) NULL DEFAULT NULL,
   `Replinishable` TINYINT(4) NULL DEFAULT NULL,
   `Expeditable` TINYINT(4) NULL DEFAULT NULL,
-  `Reorder Time` INT(11) NULL COMMENT 'Measrued in days',
-  `Sold Quantity` INT(11) NULL,
+  `ReorderTime` INT(11) NULL DEFAULT NULL COMMENT 'Measrued in days',
+  `TotalSold` INT(11) NULL DEFAULT NULL,
+  `Status` VARCHAR(45) NULL DEFAULT NULL,
+  `VID` INT(11) NULL DEFAULT NULL,
   PRIMARY KEY (`PID`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 119
 DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `xehardb`.`ordersDetails`
+-- Table `xehardb`.`ordersdetails`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `xehardb`.`ordersDetails` (
+CREATE TABLE IF NOT EXISTS `xehardb`.`ordersdetails` (
   `OID` INT(11) NOT NULL,
   `PID` INT(11) NOT NULL,
   `UnitPrice` DECIMAL(5,2) NULL DEFAULT NULL,
   `Quantity` INT(11) NULL DEFAULT NULL,
-  `Discount` DECIMAL(4,4) NULL,
+  `Discount` DECIMAL(4,4) NULL DEFAULT NULL,
   PRIMARY KEY (`OID`, `PID`),
   INDEX `fk_orders_products1_idx` (`PID` ASC),
   CONSTRAINT `fk_orders_products1`
@@ -156,7 +159,7 @@ CREATE TABLE IF NOT EXISTS `xehardb`.`customerorders` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_customerOrders_orders1`
     FOREIGN KEY (`OID`)
-    REFERENCES `xehardb`.`ordersDetails` (`OID`)
+    REFERENCES `xehardb`.`ordersdetails` (`OID`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -204,6 +207,78 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
+-- Table `xehardb`.`tags`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`tags` (
+  `TID` INT(11) NOT NULL,
+  `Name` VARCHAR(45) NULL DEFAULT NULL,
+  `tagscol` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`TID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`imagetags`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`imagetags` (
+  `IMID` INT(11) NOT NULL,
+  `TID` INT(11) NOT NULL,
+  PRIMARY KEY (`IMID`, `TID`),
+  INDEX `fk_imageTags_tags1_idx` (`TID` ASC),
+  CONSTRAINT `fk_imageTags_images1`
+    FOREIGN KEY (`IMID`)
+    REFERENCES `xehardb`.`images` (`IMID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_imageTags_tags1`
+    FOREIGN KEY (`TID`)
+    REFERENCES `xehardb`.`tags` (`TID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`warehouse`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`warehouse` (
+  `WID` INT(11) NOT NULL,
+  `Address` INT(11) NULL DEFAULT NULL,
+  `City` VARCHAR(45) NULL DEFAULT NULL,
+  `State` VARCHAR(45) NULL DEFAULT NULL,
+  `Country` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`WID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`inventory`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`inventory` (
+  `WID` INT(11) NOT NULL,
+  `PID` INT(11) NOT NULL,
+  `WarehouseQuantity` INT(11) NULL DEFAULT NULL,
+  PRIMARY KEY (`WID`, `PID`),
+  INDEX `fk_inventory_warehouse1_idx` (`WID` ASC),
+  INDEX `fk_inventory_products1_idx` (`PID` ASC),
+  CONSTRAINT `fk_inventory_products1`
+    FOREIGN KEY (`PID`)
+    REFERENCES `xehardb`.`products` (`PID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_inventory_warehouse1`
+    FOREIGN KEY (`WID`)
+    REFERENCES `xehardb`.`warehouse` (`WID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
 -- Table `xehardb`.`keywords`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `xehardb`.`keywords` (
@@ -222,6 +297,77 @@ CREATE TABLE IF NOT EXISTS `xehardb`.`materials` (
   `Name` VARCHAR(60) NULL DEFAULT NULL,
   PRIMARY KEY (`MID`))
 ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`productsaleschannels`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`productsaleschannels` (
+  `SCID` INT(11) NOT NULL,
+  `PID` INT(11) NOT NULL,
+  `SalesChannelPrice` DECIMAL(5,2) NULL DEFAULT NULL,
+  `SoldOnSalesChannel` INT(11) NULL DEFAULT NULL,
+  PRIMARY KEY (`SCID`, `PID`),
+  INDEX `fk_saleschannel_products1_idx` (`PID` ASC),
+  CONSTRAINT `fk_saleschannel_products1`
+    FOREIGN KEY (`PID`)
+    REFERENCES `xehardb`.`products` (`PID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`saleschannels`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`saleschannels` (
+  `SCID` INT(11) NOT NULL,
+  `Name` VARCHAR(45) NULL DEFAULT NULL,
+  `StoreUrl` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`SCID`),
+  CONSTRAINT `fk_salesChannels_saleschannel1`
+    FOREIGN KEY (`SCID`)
+    REFERENCES `xehardb`.`productsaleschannels` (`SCID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`orders`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`orders` (
+  `OID` INT(11) NOT NULL AUTO_INCREMENT,
+  `CID` INT(11) NULL DEFAULT NULL,
+  `SCID` INT(11) NULL,
+  `OrderDate` DATETIME NULL DEFAULT NULL,
+  `ShipDate` DATETIME NULL DEFAULT NULL,
+  `ShipVia` VARCHAR(45) NULL DEFAULT NULL,
+  `Freight` DECIMAL(4,4) NULL DEFAULT NULL,
+  `ShipName` VARCHAR(45) NULL DEFAULT NULL,
+  `ShipAddress` VARCHAR(60) NULL DEFAULT NULL,
+  `ShipCity` VARCHAR(45) NULL DEFAULT NULL,
+  `ShipState` VARCHAR(60) NULL DEFAULT NULL,
+  `ShipZip` VARCHAR(10) NULL DEFAULT NULL,
+  `ShipCountry` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`OID`),
+  INDEX `fk_orders_customers1_idx` (`CID` ASC),
+  INDEX `fk_orders_saleschannels1_idx` (`SCID` ASC),
+  CONSTRAINT `fk_orders_customers1`
+    FOREIGN KEY (`CID`)
+    REFERENCES `xehardb`.`customers` (`CID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_orders_saleschannels1`
+    FOREIGN KEY (`SCID`)
+    REFERENCES `xehardb`.`saleschannels` (`SCID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+AUTO_INCREMENT = 23
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -418,6 +564,50 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
+-- Table `xehardb`.`purchaseinvoices`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`purchaseinvoices` (
+  `POID` INT(11) NOT NULL AUTO_INCREMENT,
+  `PID` INT(11) NOT NULL,
+  `Price` DECIMAL(5,2) NOT NULL,
+  `Quantity` INT(11) NOT NULL,
+  `Retrieval` ENUM('Ship', 'Pick-Up') NOT NULL,
+  `InvoiceDate` DATETIME NOT NULL,
+  `BillTo` VARCHAR(45) NULL DEFAULT NULL,
+  `ShipTo` VARCHAR(45) NULL DEFAULT NULL,
+  `DueDate` DATETIME NULL DEFAULT NULL,
+  `SalesPerson` VARCHAR(45) NULL DEFAULT NULL,
+  `Status` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`POID`),
+  INDEX `fk_purchaseInvoices_products1_idx` (`PID` ASC),
+  CONSTRAINT `fk_purchaseInvoices_products1`
+    FOREIGN KEY (`PID`)
+    REFERENCES `xehardb`.`products` (`PID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`vendors`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`vendors` (
+  `VID` INT(11) NOT NULL,
+  `Name` VARCHAR(45) NULL DEFAULT NULL,
+  `VIN` VARCHAR(45) NULL DEFAULT NULL,
+  `Street` VARCHAR(45) NULL DEFAULT NULL,
+  `City` VARCHAR(45) NULL DEFAULT NULL,
+  `Zip` INT(5) NULL DEFAULT NULL,
+  `Country` VARCHAR(45) NULL DEFAULT NULL,
+  `Email` VARCHAR(45) NULL DEFAULT NULL,
+  `approvalStatus` TINYINT NOT NULL,
+  PRIMARY KEY (`VID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
 -- Table `xehardb`.`warranty`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `xehardb`.`warranty` (
@@ -427,7 +617,7 @@ CREATE TABLE IF NOT EXISTS `xehardb`.`warranty` (
   `Company` VARCHAR(45) NULL DEFAULT NULL,
   `Phone` VARCHAR(10) NULL DEFAULT NULL,
   `Length` INT(11) NULL DEFAULT NULL COMMENT 'Stored in Days',
-  `warrantycol` VARCHAR(45) NULL,
+  `warrantycol` VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (`WID`),
   INDEX `fk_warranty_products1_idx` (`PID` ASC),
   CONSTRAINT `fk_warranty_products1`
@@ -440,88 +630,55 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `xehardb`.`orders`
+-- Table `xehardb`.`vendorStock`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `xehardb`.`orders` (
-  `OID` INT NOT NULL,
-  `CID` INT NOT NULL,
-  `OrderDate` DATETIME NULL,
-  `ShipDate` DATETIME NULL,
-  `ShipVia` VARCHAR(45) NULL,
-  `Freight` DECIMAL(4,4) NULL,
-  `ShipName` VARCHAR(45) NULL,
-  `ShipAddress` VARCHAR(60) NULL,
-  `ShipCity` VARCHAR(45) NULL,
-  `ShipRegion` VARCHAR(60) NULL,
-  `ShipZip` VARCHAR(10) NULL,
-  `ShipCountry` VARCHAR(45) NULL,
-  PRIMARY KEY (`OID`, `CID`),
-  INDEX `fk_orders_customers1_idx` (`CID` ASC),
-  CONSTRAINT `fk_orders_ordersDetails`
-    FOREIGN KEY (`OID`)
-    REFERENCES `xehardb`.`ordersDetails` (`OID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_orders_customers1`
-    FOREIGN KEY (`CID`)
-    REFERENCES `xehardb`.`customers` (`CID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `xehardb`.`tags`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `xehardb`.`tags` (
-  `TID` INT NOT NULL,
-  `Name` VARCHAR(45) NULL,
-  `tagscol` VARCHAR(45) NULL,
-  PRIMARY KEY (`TID`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `xehardb`.`imageTags`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `xehardb`.`imageTags` (
-  `IMID` INT NOT NULL,
-  `TID` INT NOT NULL,
-  PRIMARY KEY (`IMID`, `TID`),
-  INDEX `fk_imageTags_tags1_idx` (`TID` ASC),
-  CONSTRAINT `fk_imageTags_images1`
-    FOREIGN KEY (`IMID`)
-    REFERENCES `xehardb`.`images` (`IMID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_imageTags_tags1`
-    FOREIGN KEY (`TID`)
-    REFERENCES `xehardb`.`tags` (`TID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `xehardb`.`vendors`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `xehardb`.`vendors` (
-  `VID` INT(11) NOT NULL DEFAULT 1,
-  `Name` VARCHAR(45) NOT NULL,
-  `VIN` VARCHAR(45) NOT NULL,
+CREATE TABLE IF NOT EXISTS `xehardb`.`vendorStock` (
+  `VID` INT(11) NOT NULL,
   `PID` INT(11) NOT NULL,
-  `Phone Number` VARCHAR(10) NOT NULL,
-  `Street` VARCHAR(45) NOT NULL,
-  `City` VARCHAR(45) NOT NULL,
-  `State` VARCHAR(45) NOT NULL,
-  `Zip` INT(5) NOT NULL,
-  `Country` VARCHAR(45) NULL,
-  `Email` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`VID`),
-  INDEX `fk_vendors_products1_idx` (`PID` ASC),
-  CONSTRAINT `fk_vendors_products1`
+  `Quantity` INT(11) NOT NULL,
+  PRIMARY KEY (`VID`, `PID`),
+  INDEX `fk_vendorStock_products1_idx` (`PID` ASC),
+  CONSTRAINT `fk_vendorStock_vendors1`
+    FOREIGN KEY (`VID`)
+    REFERENCES `xehardb`.`vendors` (`VID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vendorStock_products1`
     FOREIGN KEY (`PID`)
     REFERENCES `xehardb`.`products` (`PID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`users`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`users` (
+  `UID` INT(11) NOT NULL,
+  `username` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(45) NOT NULL,
+  `userRights` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`UID`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `xehardb`.`userVendors`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `xehardb`.`userVendors` (
+  `UID` INT(11) NOT NULL,
+  `VID` INT(11) NOT NULL,
+  PRIMARY KEY (`UID`, `VID`),
+  INDEX `fk_userVendors_vendors1_idx` (`VID` ASC),
+  CONSTRAINT `fk_userVendors_users1`
+    FOREIGN KEY (`UID`)
+    REFERENCES `xehardb`.`users` (`UID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_userVendors_vendors1`
+    FOREIGN KEY (`VID`)
+    REFERENCES `xehardb`.`vendors` (`VID`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
